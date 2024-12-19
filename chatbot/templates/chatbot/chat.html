@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        #chat-box {
+            height: 300px;
+            overflow-y: scroll;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        input[type="text"] {
+            width: 75%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Chatbot</h2>
+        <div id="chat-box"></div>
+        <form method="POST" onsubmit="sendMessage(); return false;">
+            {% csrf_token %}
+            <input type="text" id="user-input" placeholder="Type a message" required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // Add user message to the chat box
+            document.getElementById('chat-box').innerHTML += `<p><strong>You:</strong> ${userInput}</p>`;
+
+            // Send message to the server and get response
+            const response = await fetch('/chatbot/get-response/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: `user_input=${userInput}`,
+            });
+
+            const data = await response.json();
+
+            // Add bot response to the chat box
+            document.getElementById('chat-box').innerHTML += `<p><strong>Bot:</strong> ${data.response}</p>`;
+
+            // Clear the input field
+            document.getElementById('user-input').value = '';
+
+            // Scroll the chat box to the bottom
+            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+        }
+    </script>
+
+</body>
+
+</html>
